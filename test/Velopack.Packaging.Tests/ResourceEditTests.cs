@@ -33,6 +33,33 @@ public class ResourceEditTests
     }
 
     [Fact]
+    public void CommitResourcesInCorrectOrder()
+    {
+        using var logger = _output.BuildLoggerFor<ResourceEditTests>();
+        using var _1 = Utility.GetTempFileName(out var tempFile);
+        var exe = PathHelper.GetRustAsset("setup.exe");
+        File.Copy(exe, tempFile);
+
+        var nuspec = PathHelper.GetFixture("FullNuspec.nuspec");
+        var manifest = PackageManifest.ParseFromFile(nuspec);
+        var pkgVersion = manifest.Version!;
+
+        var edit = new ResourceEdit(tempFile, logger);
+        edit.SetExeIcon(PathHelper.GetFixture("clowd.ico"));
+        edit.SetVersionInfo(manifest);
+        edit.Commit();
+
+        var afterRsrc = PEImage.FromFile(PEFile.FromFile(tempFile)).Resources;
+        Assert.NotNull(afterRsrc);
+
+        uint lastId = 0;
+        foreach (var e in afterRsrc.Entries) {
+            Assert.True(e.Id > lastId, "Resource entry ID must be greater than the previous");
+            lastId = e.Id;
+        }
+    }
+
+    [Fact]
     public void CopyResourcesWithoutRsrc()
     {
         using var logger = _output.BuildLoggerFor<ResourceEditTests>();
@@ -98,6 +125,7 @@ public class ResourceEditTests
         Assert.NotNull(afterRsrc);
         var afterIcon = IconResource.FromDirectory(afterRsrc);
         Assert.Single(afterIcon.GetIconGroups());
+        Assert.Equal(1, afterIcon.GetIconGroups().Single().Type);
         Assert.Equal(7, afterIcon.GetIconGroups().ToList()[0].GetIconEntries().Count());
     }
 

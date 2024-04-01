@@ -21,6 +21,7 @@ public class ResourceEdit
     private readonly ushort _langId = kLangNeutral;
 
     IResourceDirectory _resources;
+    private bool _disposed;
 
     public ResourceEdit(string exeFile, ILogger logger)
     {
@@ -34,17 +35,15 @@ public class ResourceEdit
         try {
             var existingInfo = VersionInfoResource.FromDirectory(_resources);
             if (existingInfo != null) {
-                var existingStringInfo = existingInfo.GetChild<StringFileInfo>(StringFileInfo.StringFileInfoKey);
-                var existingTable = existingStringInfo?.Tables.FirstOrDefault();
-                if (existingTable != null) {
-                    _langId = existingTable.LanguageIdentifier;
-                }
+                _langId = (ushort) existingInfo.Lcid;
             }
         } catch { }
     }
 
     public void SetExeIcon(string iconPath)
     {
+        ThrowIfDisposed();
+
         // should use this commented code once these issues are fixed in AsmResolver 
         // https://github.com/Washi1337/AsmResolver/issues/532
         // https://github.com/Washi1337/AsmResolver/issues/533
@@ -87,6 +86,8 @@ public class ResourceEdit
 
     private void WriteToDirectory(IResourceDirectory rootDirectory, Dictionary<uint, IconGroupDirectory> _entries)
     {
+        ThrowIfDisposed();
+
         // this function can be removed once these issues are fixed in AsmResolver 
         // https://github.com/Washi1337/AsmResolver/issues/532
         // https://github.com/Washi1337/AsmResolver/issues/533
@@ -109,6 +110,8 @@ public class ResourceEdit
 
     public void SetVersionInfo(PackageManifest package)
     {
+        ThrowIfDisposed();
+
         // We just replace the entire VersionInfo section, so we know that the
         // VarFileInfo languages will be correct.
         var fileVersion = new Version(package.Version.Major, package.Version.Minor, package.Version.Patch, 0);
@@ -144,6 +147,8 @@ public class ResourceEdit
 
     public void CopyResourcesFrom(string otherExeFile)
     {
+        ThrowIfDisposed();
+
         var file = PEFile.FromBytes(File.ReadAllBytes(otherExeFile));
         var image = PEImage.FromFile(file);
         _resources = image.Resources;
@@ -151,8 +156,17 @@ public class ResourceEdit
 
     public void Commit()
     {
+        ThrowIfDisposed();
+        _disposed = true;
+
+        var sortedResources = new ResourceDirectory((uint) 0);
+        foreach (var entry in _resources.Entries.OrderBy(e => e.Id).ToArray()) {
+            _resources.RemoveEntry(entry.Id);
+            sortedResources.Entries.Add(entry);
+        }
+
         var resourceBuffer = new ResourceDirectoryBuffer();
-        resourceBuffer.AddDirectory(_resources);
+        resourceBuffer.AddDirectory(sortedResources);
 
         var resourceDirectory = _file.OptionalHeader.GetDataDirectory(DataDirectoryIndex.ResourceDirectory);
 
@@ -171,5 +185,10 @@ public class ResourceEdit
             using var fs = File.Create(_exePath);
             _file.Write(fs);
         });
+    }
+
+    private void ThrowIfDisposed()
+    {
+        if (_disposed) throw new ObjectDisposedException(nameof(ResourceEdit));
     }
 }
