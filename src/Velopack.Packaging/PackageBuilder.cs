@@ -43,9 +43,12 @@ public abstract class PackageBuilder<T> : ICommand<T>
 
     public async Task Run(T options)
     {
-        if (options.TargetRuntime?.BaseRID != SupportedTargetOs)
+        if (options.TargetRuntime?.BaseRID != SupportedTargetOs) {
             throw new UserInfoException($"To build packages for {SupportedTargetOs.GetOsLongName()}, " +
-                $"the target rid must be {SupportedTargetOs} (actually was {options.TargetRuntime?.BaseRID}).");
+                $"the target rid must be {SupportedTargetOs} (actually was {options.TargetRuntime?.BaseRID}). " +
+                $"If your real intention was to cross-compile a release for {options.TargetRuntime?.BaseRID} then you " +
+                $"should provide an OS directive: eg. 'vpk [{options.TargetRuntime?.BaseRID.GetOsShortName()}] pack ...'");
+        }
 
         Log.Info($"Beginning to package Velopack release {options.PackVersion}.");
         Log.Info("Releases Directory: " + options.ReleaseDir.FullName);
