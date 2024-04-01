@@ -706,6 +706,15 @@
           "Serilog": "3.1.1"
         }
       },
+      "SixLabors.ImageSharp": {
+        "type": "Transitive",
+        "resolved": "2.1.7",
+        "contentHash": "CiOV86pE4v1U850lO8zTRXQMysFCo40DJnHwxX8mIJbJ/unr7I9avhHqCh3BvU0sOSDdCp/2LcIz+7zVCWjMZw==",
+        "dependencies": {
+          "System.Runtime.CompilerServices.Unsafe": "5.0.0",
+          "System.Text.Encoding.CodePages": "5.0.0"
+        }
+      },
       "System.Collections": {
         "type": "Transitive",
         "resolved": "4.3.0",
@@ -1210,6 +1219,14 @@
           "System.Runtime": "4.3.0"
         }
       },
+      "System.Text.Encoding.CodePages": {
+        "type": "Transitive",
+        "resolved": "5.0.0",
+        "contentHash": "NyscU59xX6Uo91qvhOs2Ccho3AR2TnZPomo1Z0K6YpyztBPM/A5VbkzOO19sy3A3i1TtEnTxA7bCe3Us+r5MWg==",
+        "dependencies": {
+          "Microsoft.NETCore.Platforms": "5.0.0"
+        }
+      },
       "System.Text.Encodings.Web": {
         "type": "Transitive",
         "resolved": "8.0.0",
@@ -1267,6 +1284,12 @@
           "Velopack.Packaging": "[1.0.0, )"
         }
       },
+      "velopack.icolib": {
+        "type": "Project",
+        "dependencies": {
+          "SixLabors.ImageSharp": "[2.1.7, )"
+        }
+      },
       "velopack.packaging": {
         "type": "Project",
         "dependencies": {
@@ -1278,9 +1301,6 @@
           "System.Net.Http": "[4.3.4, )",
           "Velopack": "[1.0.0, )"
         }
-      },
-      "velopack.packaging.hostmodel": {
-        "type": "Project"
       },
       "velopack.packaging.unix": {
         "type": "Project",
@@ -1294,8 +1314,8 @@
         "dependencies": {
           "AsmResolver.DotNet": "[5.5.1, )",
           "AsmResolver.PE.Win32Resources": "[5.5.1, )",
-          "Velopack.Packaging": "[1.0.0, )",
-          "Velopack.Packaging.HostModel": "[1.0.0, )"
+          "Velopack.IcoLib": "[1.1.1, )",
+          "Velopack.Packaging": "[1.0.0, )"
         }
       }
     },
@@ -1997,6 +2017,15 @@
           "Serilog": "3.1.1"
         }
       },
+      "SixLabors.ImageSharp": {
+        "type": "Transitive",
+        "resolved": "2.1.7",
+        "contentHash": "CiOV86pE4v1U850lO8zTRXQMysFCo40DJnHwxX8mIJbJ/unr7I9avhHqCh3BvU0sOSDdCp/2LcIz+7zVCWjMZw==",
+        "dependencies": {
+          "System.Runtime.CompilerServices.Unsafe": "5.0.0",
+          "System.Text.Encoding.CodePages": "5.0.0"
+        }
+      },
       "System.Collections": {
         "type": "Transitive",
         "resolved": "4.3.0",
@@ -2268,6 +2297,11 @@
           "Microsoft.NETCore.Targets": "1.1.0"
         }
       },
+      "System.Runtime.CompilerServices.Unsafe": {
+        "type": "Transitive",
+        "resolved": "5.0.0",
+        "contentHash": "ZD9TMpsmYJLrxbbmdvhwt9YEgG5WntEnZ/d1eH8JBX9LBp+Ju8BSBhUGbZMNVHHomWo2KVImJhTDl2hIgw/6MA=="
+      },
       "System.Runtime.Extensions": {
         "type": "Transitive",
         "resolved": "4.3.0",
@@ -2493,6 +2527,14 @@
           "System.Runtime": "4.3.0"
         }
       },
+      "System.Text.Encoding.CodePages": {
+        "type": "Transitive",
+        "resolved": "5.0.0",
+        "contentHash": "NyscU59xX6Uo91qvhOs2Ccho3AR2TnZPomo1Z0K6YpyztBPM/A5VbkzOO19sy3A3i1TtEnTxA7bCe3Us+r5MWg==",
+        "dependencies": {
+          "Microsoft.NETCore.Platforms": "5.0.0"
+        }
+      },
       "System.Text.Encodings.Web": {
         "type": "Transitive",
         "resolved": "8.0.0",
@@ -2546,6 +2588,12 @@
           "Velopack.Packaging": "[1.0.0, )"
         }
       },
+      "velopack.icolib": {
+        "type": "Project",
+        "dependencies": {
+          "SixLabors.ImageSharp": "[2.1.7, )"
+        }
+      },
       "velopack.packaging": {
         "type": "Project",
         "dependencies": {
@@ -2557,9 +2605,6 @@
           "System.Net.Http": "[4.3.4, )",
           "Velopack": "[1.0.0, )"
         }
-      },
-      "velopack.packaging.hostmodel": {
-        "type": "Project"
       },
       "velopack.packaging.unix": {
         "type": "Project",
@@ -2573,8 +2618,8 @@
         "dependencies": {
           "AsmResolver.DotNet": "[5.5.1, )",
           "AsmResolver.PE.Win32Resources": "[5.5.1, )",
-          "Velopack.Packaging": "[1.0.0, )",
-          "Velopack.Packaging.HostModel": "[1.0.0, )"
+          "Velopack.IcoLib": "[1.1.1, )",
+          "Velopack.Packaging": "[1.0.0, )"
         }
       }
     }

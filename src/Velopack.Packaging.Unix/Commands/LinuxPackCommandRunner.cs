@@ -32,8 +32,8 @@ public class LinuxPackCommandRunner : PackageBuilder<LinuxPackOptions>
             var iconFilename = Options.PackId + Path.GetExtension(icon);
             File.Copy(icon, Path.Combine(dir.FullName, iconFilename), true);
 
-            var categories = String.IsNullOrWhiteSpace(Options.Categories) 
-                ? "Utility" 
+            var categories = String.IsNullOrWhiteSpace(Options.Categories)
+                ? "Utility"
                 : Options.Categories.TrimEnd(';');
 
             File.WriteAllText(appRunPath, $$"""

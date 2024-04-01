@@ -41,7 +41,7 @@ public class OsxBundleCommandRunner : ICommand<OsxBundleOptions>
             throw new UserInfoException($"--exeName '{mainExePath}' does not exist.");
         }
 
-        if (!MachO.IsMachOImage(mainExePath)) {
+        if (!BinDetect.IsMachOImage(mainExePath)) {
             throw new UserInfoException($"--exeName '{mainExePath}' is not a mach-o executable.");
         }
 

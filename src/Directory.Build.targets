@@ -27,7 +27,6 @@
 
   <Target Name="AddNugetVendorLibs" BeforeTargets="Build" Condition=" '$(VelopackPackageVendorLibs)' == 'true' ">
     <ItemGroup>
-      <None Include="..\..\vendor\rcedit.exe" Pack="true" PackagePath="vendor" />
       <None Include="..\..\vendor\zstd.exe" Pack="true" PackagePath="vendor" />
       <None Include="..\..\vendor\signtool.exe" Pack="true" PackagePath="vendor" />
       <None Include="..\..\vendor\appimagetool-x86_64.AppImage" Pack="true" PackagePath="vendor" />

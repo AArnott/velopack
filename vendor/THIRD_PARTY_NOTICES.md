@@ -1,11 +1,6 @@
 # Vendor Binaries
 This folder contains pre-compiled binaries from a variety of sources. These should be updated periodically.
 
-### rcedit.exe v2.0.0
-- Updates PE resources, like VersionInfo or icons. It is used when generating `Setup.exe` and `Update.exe` to apply the user preferences.
-- Can be found at https://github.com/electron/rcedit/releases
-- MIT License: https://github.com/electron/rcedit/blob/master/LICENSE
-
 ### signtool.exe v10.0.22621
 - Signs application binaries while building packages.
 - Can be found in the Windows SDK at "C:\Program Files (x86)\Windows Kits\10\bin\10.0.22621.0\x86\signtool.exe" or similar, depending on the version of the SDK you have installed.
