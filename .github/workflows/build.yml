@@ -121,10 +121,20 @@ jobs:
         if: ${{ matrix.os == 'ubuntu-latest' }}
       - name: Install dotnet-coverage
         run: dotnet tool install -g dotnet-coverage
-      - name: Download Rust Artifacts
+      - name: Download Rust OSX
         uses: actions/download-artifact@v4
         with:
-          name: rust-${{ matrix.os }}
+          name: rust-macos-latest
+          path: src/Rust/target/release
+      - name: Download Rust Windows
+        uses: actions/download-artifact@v4
+        with:
+          name: rust-windows-latest
+          path: src/Rust/target/release
+      - name: Download Rust Linux
+        uses: actions/download-artifact@v4
+        with:
+          name: rust-ubuntu-latest
           path: src/Rust/target/release
       - name: Build .NET
         run: dotnet build -c Release
