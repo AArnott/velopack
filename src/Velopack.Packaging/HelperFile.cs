@@ -42,17 +42,12 @@ public static class HelperFile
     [SupportedOSPlatform("linux")]
     public static string AppImageToolX64 => FindHelperFile("appimagetool-x86_64.AppImage");
 
-    [SupportedOSPlatform("windows")]
     public static string SetupPath => FindHelperFile("Setup.exe");
 
-    [SupportedOSPlatform("windows")]
     public static string StubExecutablePath => FindHelperFile("stub.exe");
 
     [SupportedOSPlatform("windows")]
     public static string SignToolPath => FindHelperFile("signtool.exe");
-
-    [SupportedOSPlatform("windows")]
-    public static string RceditPath => FindHelperFile("rcedit.exe");
 
     public static string GetDefaultAppIcon(RuntimeOs? os = null)
     {
