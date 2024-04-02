@@ -119,6 +119,9 @@ jobs:
           sudo add-apt-repository universe
           sudo apt install libfuse2
         if: ${{ matrix.os == 'ubuntu-latest' }}
+      - name: Install squashfs-tools
+        run: brew install squashfs
+        if: ${{ matrix.os == 'macos-latest' }}
       - name: Install dotnet-coverage
         run: dotnet tool install -g dotnet-coverage
       - name: Download Rust Artifacts
