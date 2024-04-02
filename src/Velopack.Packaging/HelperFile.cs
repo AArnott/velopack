@@ -8,7 +8,7 @@ public static class HelperFile
     {
         switch (os) {
         case RuntimeOs.Windows:
-            return FindHelperFile("Update.exe");
+            return FindHelperFile("update.exe");
 #if DEBUG
         case RuntimeOs.Linux:
             return FindHelperFile("update");
@@ -52,7 +52,7 @@ public static class HelperFile
 
     public static string AppImageRuntimeX86 => FindHelperFile("appimagekit-runtime-i686");
 
-    public static string SetupPath => FindHelperFile("Setup.exe");
+    public static string SetupPath => FindHelperFile("setup.exe");
 
     public static string StubExecutablePath => FindHelperFile("stub.exe");
 
