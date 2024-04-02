@@ -60,7 +60,8 @@ public static class Exe
         using var process = Process.Start(psi);
         process.WaitForExit();
 
-        var result = (process.ExitCode, File.ReadAllText(outputFile).Trim(), command);
+        var stdout = Utility.Retry(() => File.ReadAllText(outputFile).Trim(), 10, 1000);
+        var result = (process.ExitCode, stdout, command);
         ProcessFailedException.ThrowIfNonZero(result);
         return result.Item2;
     }

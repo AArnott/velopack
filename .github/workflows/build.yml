@@ -121,20 +121,10 @@ jobs:
         if: ${{ matrix.os == 'ubuntu-latest' }}
       - name: Install dotnet-coverage
         run: dotnet tool install -g dotnet-coverage
-      - name: Download Rust OSX
+      - name: Download Rust Artifacts
         uses: actions/download-artifact@v4
         with:
-          name: rust-macos-latest
-          path: src/Rust/target/release
-      - name: Download Rust Windows
-        uses: actions/download-artifact@v4
-        with:
-          name: rust-windows-latest
-          path: src/Rust/target/release
-      - name: Download Rust Linux
-        uses: actions/download-artifact@v4
-        with:
-          name: rust-ubuntu-latest
+          pattern: rust-*
           path: src/Rust/target/release
       - name: Build .NET
         run: dotnet build -c Release
@@ -144,6 +134,11 @@ jobs:
         run: dotnet test --no-build -c Release -l "console;verbosity=detailed" test/Velopack.Packaging.Tests/Velopack.Packaging.Tests.csproj
       - name: Test .NET Velopack.CommandLine.Tests
         run: dotnet test --no-build -c Release -l "console;verbosity=detailed" test/Velopack.CommandLine.Tests/Velopack.CommandLine.Tests.csproj
+      - name: Upload Cross-Compile Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: cross-${{ matrix.os }}
+          path: test/artifacts/*
       - name: Upload Coverage to Codecov
         uses: codecov/codecov-action@v4
         env:
@@ -151,6 +146,39 @@ jobs:
         with:
           directory: ./test
           fail_ci_if_error: true
+
+  test-cross:
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    needs: [test-dotnet]
+    runs-on: ${{ matrix.os }}
+    env:
+      NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+      - name: Install FUSE
+        run: |
+          sudo add-apt-repository universe
+          sudo apt install libfuse2
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+      - name: Download Cross Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: cross-*
+          path: test/artifacts
+      - name: Test Cross-Compiled Apps
+        env:
+          VELOPACK_CROSS_ARTIFACTS: true
+        run: dotnet test -c Release -l "console;verbosity=detailed" test/Velopack.Packaging.Tests/Velopack.Packaging.Tests.csproj --filter "FullyQualifiedName~RunCrossApp"
 
   package:
     runs-on: ubuntu-latest
@@ -161,20 +189,10 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Download Rust OSX
+      - name: Download Rust Artifacts
         uses: actions/download-artifact@v4
         with:
-          name: rust-macos-latest
-          path: src/Rust/target/release
-      - name: Download Rust Windows
-        uses: actions/download-artifact@v4
-        with:
-          name: rust-windows-latest
-          path: src/Rust/target/release
-      - name: Download Rust Linux
-        uses: actions/download-artifact@v4
-        with:
-          name: rust-ubuntu-latest
+          name: rust-*
           path: src/Rust/target/release
       - name: Build .NET
         run: dotnet build -c Release /p:PackRustAssets=true
