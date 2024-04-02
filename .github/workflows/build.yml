@@ -124,8 +124,9 @@ jobs:
       - name: Download Rust Artifacts
         uses: actions/download-artifact@v4
         with:
-          pattern: rust-*
           path: src/Rust/target/release
+          pattern: rust*
+          merge-multiple: true
       - name: Build .NET
         run: dotnet build -c Release
       - name: Test .NET Velopack.Tests
@@ -173,8 +174,9 @@ jobs:
       - name: Download Cross Artifacts
         uses: actions/download-artifact@v4
         with:
-          pattern: cross-*
           path: test/artifacts
+          pattern: cross*
+          merge-multiple: true
       - name: Test Cross-Compiled Apps
         env:
           VELOPACK_CROSS_ARTIFACTS: true
@@ -192,8 +194,9 @@ jobs:
       - name: Download Rust Artifacts
         uses: actions/download-artifact@v4
         with:
-          name: rust-*
           path: src/Rust/target/release
+          pattern: rust*
+          merge-multiple: true
       - name: Build .NET
         run: dotnet build -c Release /p:PackRustAssets=true
       - name: Upload Package Artifacts
