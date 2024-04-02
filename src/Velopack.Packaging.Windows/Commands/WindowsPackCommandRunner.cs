@@ -48,7 +48,7 @@ public class WindowsPackCommandRunner : PackageBuilder<WindowsPackOptions>
         packDir = dir.FullName;
 
         var updatePath = Path.Combine(TempDir.FullName, "Update.exe");
-        File.Copy(HelperFile.GetUpdatePath(), updatePath, true);
+        File.Copy(HelperFile.GetUpdatePath(RuntimeOs.Windows), updatePath, true);
 
         // update icon for Update.exe if requested
         if (Options.Icon != null) {

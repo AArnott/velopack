@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using Velopack.Packaging.Unix.Commands;
 using Velopack.Packaging.Windows.Commands;
+using Velopack.Vpk;
 using Velopack.Vpk.Logging;
 
 namespace Velopack.Packaging.Tests;
@@ -31,7 +32,7 @@ public static class TestApp
             if (p.ExitCode != 0)
                 throw new Exception($"dotnet publish failed with exit code {p.ExitCode}");
 
-            var console = new BasicConsole(logger, new DefaultPromptValueFactory(false));
+            var console = new BasicConsole(logger, new VelopackDefaults(false));
 
             if (VelopackRuntimeInfo.IsWindows) {
                 var options = new WindowsPackOptions {

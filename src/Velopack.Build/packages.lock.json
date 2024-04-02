@@ -188,6 +188,15 @@
         "resolved": "6.9.1",
         "contentHash": "ypnSvEtpNGo48bAWn95J1oHChycCXcevFSbn53fqzLxlXFSZP7dawu8p/7mHAfGufZQSV2sBpW80XQGIfXO8kQ=="
       },
+      "SharpZipLib": {
+        "type": "Transitive",
+        "resolved": "1.4.2",
+        "contentHash": "yjj+3zgz8zgXpiiC3ZdF/iyTBbz2fFvMxZFEBPUcwZjIvXOf37Ylm+K58hqMfIBt5JgU/Z2uoUS67JmTLe973A==",
+        "dependencies": {
+          "System.Memory": "4.5.4",
+          "System.Threading.Tasks.Extensions": "4.5.2"
+        }
+      },
       "SixLabors.ImageSharp": {
         "type": "Transitive",
         "resolved": "2.1.7",
@@ -407,6 +416,7 @@
         "type": "Project",
         "dependencies": {
           "ELFSharp": "[2.17.3, )",
+          "SharpZipLib": "[1.4.2, )",
           "Velopack.Packaging": "[1.0.0, )"
         }
       },
@@ -708,6 +718,11 @@
         "type": "Transitive",
         "resolved": "4.3.2",
         "contentHash": "leXiwfiIkW7Gmn7cgnNcdtNAU70SjmKW3jxGj1iKHOvdn0zRWsgv/l2OJUO5zdGdiv2VRFnAsxxhDgMzofPdWg=="
+      },
+      "SharpZipLib": {
+        "type": "Transitive",
+        "resolved": "1.4.2",
+        "contentHash": "yjj+3zgz8zgXpiiC3ZdF/iyTBbz2fFvMxZFEBPUcwZjIvXOf37Ylm+K58hqMfIBt5JgU/Z2uoUS67JmTLe973A=="
       },
       "SixLabors.ImageSharp": {
         "type": "Transitive",
@@ -1274,6 +1289,7 @@
         "type": "Project",
         "dependencies": {
           "ELFSharp": "[2.17.3, )",
+          "SharpZipLib": "[1.4.2, )",
           "Velopack.Packaging": "[1.0.0, )"
         }
       },

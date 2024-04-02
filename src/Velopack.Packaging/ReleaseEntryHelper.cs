@@ -12,11 +12,11 @@ public class ReleaseEntryHelper
     private readonly string _channel;
     private Dictionary<string, List<VelopackAsset>> _releases;
 
-    public ReleaseEntryHelper(string outputDir, string channel, ILogger logger)
+    public ReleaseEntryHelper(string outputDir, string channel, ILogger logger, RuntimeOs os)
     {
         _outputDir = outputDir;
         _logger = logger;
-        _channel = channel ?? GetDefaultChannel();
+        _channel = channel ?? GetDefaultChannel(os);
         _releases = GetReleasesFromDir(outputDir);
     }
 
@@ -131,20 +131,20 @@ public class ReleaseEntryHelper
         return SimpleJson.SerializeObject(feed);
     }
 
-    public static string GetSuggestedReleaseName(string id, string version, string channel, bool delta)
+    public static string GetSuggestedReleaseName(string id, string version, string channel, bool delta, RuntimeOs os)
     {
         var suffix = GetUniqueAssetSuffix(channel);
         version = SemanticVersion.Parse(version).ToNormalizedString();
-        if (VelopackRuntimeInfo.IsWindows && channel == GetDefaultChannel(RuntimeOs.Windows)) {
+        if (os == RuntimeOs.Windows && channel == GetDefaultChannel(RuntimeOs.Windows)) {
             return $"{id}-{version}{(delta ? "-delta" : "-full")}.nupkg";
         }
         return $"{id}-{version}{suffix}{(delta ? "-delta" : "-full")}.nupkg";
     }
 
-    public static string GetSuggestedPortableName(string id, string channel)
+    public static string GetSuggestedPortableName(string id, string channel, RuntimeOs os)
     {
         var suffix = GetUniqueAssetSuffix(channel);
-        if (VelopackRuntimeInfo.IsLinux) {
+        if (os == RuntimeOs.Linux) {
             if (channel == GetDefaultChannel(RuntimeOs.Linux)) {
                 return $"{id}.AppImage";
             } else {
@@ -155,12 +155,12 @@ public class ReleaseEntryHelper
         }
     }
 
-    public static string GetSuggestedSetupName(string id, string channel)
+    public static string GetSuggestedSetupName(string id, string channel, RuntimeOs os)
     {
         var suffix = GetUniqueAssetSuffix(channel);
-        if (VelopackRuntimeInfo.IsWindows)
+        if (os == RuntimeOs.Windows)
             return $"{id}{suffix}-Setup.exe";
-        else if (VelopackRuntimeInfo.IsOSX)
+        else if (os == RuntimeOs.OSX)
             return $"{id}{suffix}-Setup.pkg";
         else
             throw new PlatformNotSupportedException("Platform not supported.");
@@ -171,9 +171,8 @@ public class ReleaseEntryHelper
         return "-" + channel;
     }
 
-    public static string GetDefaultChannel(RuntimeOs? os = null)
+    public static string GetDefaultChannel(RuntimeOs os)
     {
-        os ??= VelopackRuntimeInfo.SystemOs;
         if (os == RuntimeOs.Windows) return "win";
         if (os == RuntimeOs.OSX) return "osx";
         if (os == RuntimeOs.Linux) return "linux";

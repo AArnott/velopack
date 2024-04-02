@@ -706,6 +706,11 @@
           "Serilog": "3.1.1"
         }
       },
+      "SharpZipLib": {
+        "type": "Transitive",
+        "resolved": "1.4.2",
+        "contentHash": "yjj+3zgz8zgXpiiC3ZdF/iyTBbz2fFvMxZFEBPUcwZjIvXOf37Ylm+K58hqMfIBt5JgU/Z2uoUS67JmTLe973A=="
+      },
       "SixLabors.ImageSharp": {
         "type": "Transitive",
         "resolved": "2.1.7",
@@ -1306,6 +1311,7 @@
         "type": "Project",
         "dependencies": {
           "ELFSharp": "[2.17.3, )",
+          "SharpZipLib": "[1.4.2, )",
           "Velopack.Packaging": "[1.0.0, )"
         }
       },
@@ -2017,6 +2023,11 @@
           "Serilog": "3.1.1"
         }
       },
+      "SharpZipLib": {
+        "type": "Transitive",
+        "resolved": "1.4.2",
+        "contentHash": "yjj+3zgz8zgXpiiC3ZdF/iyTBbz2fFvMxZFEBPUcwZjIvXOf37Ylm+K58hqMfIBt5JgU/Z2uoUS67JmTLe973A=="
+      },
       "SixLabors.ImageSharp": {
         "type": "Transitive",
         "resolved": "2.1.7",
@@ -2610,6 +2621,7 @@
         "type": "Project",
         "dependencies": {
           "ELFSharp": "[2.17.3, )",
+          "SharpZipLib": "[1.4.2, )",
           "Velopack.Packaging": "[1.0.0, )"
         }
       },

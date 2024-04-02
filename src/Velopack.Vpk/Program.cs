@@ -84,92 +84,81 @@ public class Program
         });
 
         SetupConfig(builder);
-        SetupLogging(builder, verbose, legacyConsole, defaultYes);
+        SetupLogging(builder, verbose, legacyConsole);
         SetupVelopackService(builder.Services);
+
+        RuntimeOs targetOs = VelopackRuntimeInfo.SystemOs;
+        if (new bool[] { directiveWin, directiveLinux, directiveOsx }.Count(x => x) > 1) {
+            throw new UserInfoException(
+                "Invalid arguments: Only one OS directive can be specified at a time: either [win], [linux], or [osx].");
+        }
+
+        if (directiveWin) {
+            targetOs = RuntimeOs.Windows;
+        } else if (directiveLinux) {
+            targetOs = RuntimeOs.Linux;
+        } else if (directiveOsx) {
+            targetOs = RuntimeOs.OSX;
+        }
+
+        builder.Services.AddSingleton(new VelopackDefaults(defaultYes, targetOs));
 
         var host = builder.Build();
         var provider = host.Services;
         var logger = provider.GetRequiredService<Microsoft.Extensions.Logging.ILogger>();
-        var console = provider.GetRequiredService<IFancyConsole>();
 
-        try {
-            RuntimeOs targetOs = VelopackRuntimeInfo.SystemOs;
-            if (new bool[] { directiveWin, directiveLinux, directiveOsx }.Count(x => x) > 1) {
-                throw new UserInfoException(
-                    "Invalid arguments: Only one OS directive can be specified at a time: either [win], [linux], or [osx].");
+        if (targetOs != VelopackRuntimeInfo.SystemOs) {
+            logger.LogInformation($"Directive enabled for cross-compiling from {VelopackRuntimeInfo.SystemOs} (current os) to {targetOs}.");
+        }
+
+        switch (targetOs) {
+        case RuntimeOs.Windows:
+            rootCommand.AddCommand<WindowsPackCommand, WindowsPackCommandRunner, WindowsPackOptions>(provider);
+            break;
+        case RuntimeOs.Linux:
+            rootCommand.AddCommand<LinuxPackCommand, LinuxPackCommandRunner, LinuxPackOptions>(provider);
+            break;
+        case RuntimeOs.OSX:
+            if (VelopackRuntimeInfo.IsOSX) {
+                rootCommand.AddCommand<OsxBundleCommand, OsxBundleCommandRunner, OsxBundleOptions>(provider);
+                rootCommand.AddCommand<OsxPackCommand, OsxPackCommandRunner, OsxPackOptions>(provider);
+            } else {
+                throw new NotSupportedException($"Cross-compiling from {VelopackRuntimeInfo.SystemOs} to MacOS is not supported.");
             }
+            break;
+        default:
+            throw new NotSupportedException("Unsupported OS platform: " + VelopackRuntimeInfo.SystemOs.GetOsLongName());
+        }
 
-            if (directiveWin) {
-                targetOs = RuntimeOs.Windows;
-            } else if (directiveLinux) {
-                targetOs = RuntimeOs.Linux;
-            } else if (directiveOsx) {
-                targetOs = RuntimeOs.OSX;
-            }
+        var downloadCommand = new CliCommand("download", "Download's the latest release from a remote update source.");
+        downloadCommand.AddRepositoryDownload<GitHubDownloadCommand, GitHubRepository, GitHubDownloadOptions>(provider);
+        downloadCommand.AddRepositoryDownload<S3DownloadCommand, S3Repository, S3DownloadOptions>(provider);
+        downloadCommand.AddRepositoryDownload<AzureDownloadCommand, AzureRepository, AzureDownloadOptions>(provider);
+        downloadCommand.AddRepositoryDownload<LocalDownloadCommand, LocalRepository, LocalDownloadOptions>(provider);
+        downloadCommand.AddRepositoryDownload<HttpDownloadCommand, HttpRepository, HttpDownloadOptions>(provider);
+        rootCommand.Add(downloadCommand);
 
-            if (targetOs != VelopackRuntimeInfo.SystemOs) {
-                logger.LogInformation($"Directive enabled for cross-compiling from {VelopackRuntimeInfo.SystemOs} (current os) to {targetOs}.");
-            }
+        var uploadCommand = new CliCommand("upload", "Upload local package(s) to a remote update source.");
+        uploadCommand.AddRepositoryUpload<GitHubUploadCommand, GitHubRepository, GitHubUploadOptions>(provider);
+        uploadCommand.AddRepositoryUpload<S3UploadCommand, S3Repository, S3UploadOptions>(provider);
+        uploadCommand.AddRepositoryUpload<AzureUploadCommand, AzureRepository, AzureUploadOptions>(provider);
+        uploadCommand.AddRepositoryUpload<LocalUploadCommand, LocalRepository, LocalUploadOptions>(provider);
+        rootCommand.Add(uploadCommand);
 
-            switch (targetOs) {
-            case RuntimeOs.Windows:
-                rootCommand.AddCommand<WindowsPackCommand, WindowsPackCommandRunner, WindowsPackOptions>(provider);
-                break;
-            case RuntimeOs.Linux:
-                if (VelopackRuntimeInfo.IsLinux) {
-                    rootCommand.AddCommand<LinuxPackCommand, LinuxPackCommandRunner, LinuxPackOptions>(provider);
-                } else {
-                    throw new UserInfoException($"Cross-compiling from {VelopackRuntimeInfo.SystemOs} to Linux is not yet supported.");
-                }
-                break;
-            case RuntimeOs.OSX:
-                if (VelopackRuntimeInfo.IsOSX) {
-                    rootCommand.AddCommand<OsxBundleCommand, OsxBundleCommandRunner, OsxBundleOptions>(provider);
-                    rootCommand.AddCommand<OsxPackCommand, OsxPackCommandRunner, OsxPackOptions>(provider);
-                } else {
-                    throw new UserInfoException($"Cross-compiling from {VelopackRuntimeInfo.SystemOs} to MacOS is not yet supported.");
-                }
-                break;
-            default:
-                throw new NotSupportedException("Unsupported OS platform: " + VelopackRuntimeInfo.SystemOs.GetOsLongName());
-            }
-
-            var downloadCommand = new CliCommand("download", "Download's the latest release from a remote update source.");
-            downloadCommand.AddRepositoryDownload<GitHubDownloadCommand, GitHubRepository, GitHubDownloadOptions>(provider);
-            downloadCommand.AddRepositoryDownload<S3DownloadCommand, S3Repository, S3DownloadOptions>(provider);
-            downloadCommand.AddRepositoryDownload<AzureDownloadCommand, AzureRepository, AzureDownloadOptions>(provider);
-            downloadCommand.AddRepositoryDownload<LocalDownloadCommand, LocalRepository, LocalDownloadOptions>(provider);
-            downloadCommand.AddRepositoryDownload<HttpDownloadCommand, HttpRepository, HttpDownloadOptions>(provider);
-            rootCommand.Add(downloadCommand);
-
-            var uploadCommand = new CliCommand("upload", "Upload local package(s) to a remote update source.");
-            uploadCommand.AddRepositoryUpload<GitHubUploadCommand, GitHubRepository, GitHubUploadOptions>(provider);
-            uploadCommand.AddRepositoryUpload<S3UploadCommand, S3Repository, S3UploadOptions>(provider);
-            uploadCommand.AddRepositoryUpload<AzureUploadCommand, AzureRepository, AzureUploadOptions>(provider);
-            uploadCommand.AddRepositoryUpload<LocalUploadCommand, LocalRepository, LocalUploadOptions>(provider);
-            rootCommand.Add(uploadCommand);
-
-            var deltaCommand = new CliCommand("delta", "Utilities for creating or applying delta packages.");
-            deltaCommand.AddCommand<DeltaGenCommand, DeltaGenCommandRunner, DeltaGenOptions>(provider);
-            deltaCommand.AddCommand<DeltaPatchCommand, DeltaPatchCommandRunner, DeltaPatchOptions>(provider);
-            rootCommand.Add(deltaCommand);
+        var deltaCommand = new CliCommand("delta", "Utilities for creating or applying delta packages.");
+        deltaCommand.AddCommand<DeltaGenCommand, DeltaGenCommandRunner, DeltaGenOptions>(provider);
+        deltaCommand.AddCommand<DeltaPatchCommand, DeltaPatchCommandRunner, DeltaPatchOptions>(provider);
+        rootCommand.Add(deltaCommand);
 
 #if DEBUG
-            rootCommand.AddCommand<LoginCommand, LoginCommandRunner, LoginOptions>(provider);
-            rootCommand.AddCommand<LogoutCommand, LogoutCommandRunner, LogoutOptions>(provider);
-            rootCommand.AddRepositoryUpload<VelopackPublishCommand, VelopackFlowRepository, VelopackFlowUploadOptions>(provider);
+        rootCommand.AddCommand<LoginCommand, LoginCommandRunner, LoginOptions>(provider);
+        rootCommand.AddCommand<LogoutCommand, LogoutCommandRunner, LogoutOptions>(provider);
+        rootCommand.AddRepositoryUpload<VelopackPublishCommand, VelopackFlowRepository, VelopackFlowUploadOptions>(provider);
 #endif
 
-            var cli = new CliConfiguration(rootCommand);
-            return await cli.InvokeAsync(args);
-        } catch (Exception ex) when (ex is ProcessFailedException or UserInfoException) {
-            // some exceptions are just user info / user error, so don't need a stack trace.
-            logger.Fatal($"[bold orange3]{console.EscapeMarkup(ex.Message)}[/]");
-            return -1;
-        } catch (Exception ex) {
-            logger.Fatal(ex);
-            return -1;
-        }
+        var cli = new CliConfiguration(rootCommand);
+        return await cli.InvokeAsync(args);
+
     }
 
     private static void SetupConfig(IHostApplicationBuilder builder)
@@ -181,14 +170,12 @@ public class Program
         builder.Services.AddTransient(s => s.GetService<ILoggerFactory>().CreateLogger("vpk"));
     }
 
-    private static void SetupLogging(IHostApplicationBuilder builder, bool verbose, bool legacyConsole, bool defaultPromptValue)
+    private static void SetupLogging(IHostApplicationBuilder builder, bool verbose, bool legacyConsole)
     {
         var conf = new LoggerConfiguration()
             .MinimumLevel.Is(verbose ? LogEventLevel.Debug : LogEventLevel.Information)
             .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
             .MinimumLevel.Override("System", LogEventLevel.Warning);
-
-        builder.Services.AddSingleton(new DefaultPromptValueFactory(defaultPromptValue));
 
         if (legacyConsole) {
             // spectre can have issues with redirected output, so we disable it.
@@ -255,12 +242,13 @@ public static class ProgramCommandExtensions
             var logger = provider.GetRequiredService<Microsoft.Extensions.Logging.ILogger>();
             var console = provider.GetRequiredService<IFancyConsole>();
             var config = provider.GetRequiredService<IConfiguration>();
+            var defaults = provider.GetRequiredService<VelopackDefaults>();
 
             logger.LogInformation($"[bold]{Program.INTRO}[/]");
             var updateCheck = new UpdateChecker(logger);
             await updateCheck.CheckForUpdates();
 
-            command.SetProperties(ctx, config);
+            command.SetProperties(ctx, config, defaults.TargetOs);
             var options = OptionMapper.Map<TOpt>(command);
 
             try {

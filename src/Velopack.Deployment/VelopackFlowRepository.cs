@@ -33,7 +33,7 @@ public class VelopackFlowRepository : SourceRepository<VelopackFlowDownloadOptio
 
     public async Task UploadMissingAssetsAsync(VelopackFlowUploadOptions options)
     {
-        var helper = new ReleaseEntryHelper(options.ReleaseDir.FullName, options.Channel, Log);
+        var helper = new ReleaseEntryHelper(options.ReleaseDir.FullName, options.Channel, Log, options.TargetOs);
         var latest = helper.GetLatestAssets().ToList();
 
         Log.Info($"Preparing to upload {latest.Count} assets to Velopack");

@@ -22,7 +22,7 @@ public class PublishTask : MSBuildAsyncTask
 
     public string? Channel { get; set; }
 
-    public string? Version { get; set; } 
+    public string? Version { get; set; }
 
     protected override async Task<bool> ExecuteAsync()
     {
@@ -37,8 +37,9 @@ public class PublishTask : MSBuildAsyncTask
             return true;
         }
 
-        Channel ??= ReleaseEntryHelper.GetDefaultChannel(VelopackRuntimeInfo.SystemOs);
-        ReleaseEntryHelper helper = new(ReleaseDirectory, Channel, Logger);
+        var targetOs = VelopackRuntimeInfo.SystemOs;
+        Channel ??= ReleaseEntryHelper.GetDefaultChannel(targetOs);
+        ReleaseEntryHelper helper = new(ReleaseDirectory, Channel, Logger, targetOs);
         var latestAssets = helper.GetLatestAssets().ToList();
 
         List<string> installers = [];
@@ -51,13 +52,13 @@ public class PublishTask : MSBuildAsyncTask
             version = latestAssets[0].Version;
 
             if (VelopackRuntimeInfo.IsWindows || VelopackRuntimeInfo.IsOSX) {
-                var setupName = ReleaseEntryHelper.GetSuggestedSetupName(packageId, Channel);
+                var setupName = ReleaseEntryHelper.GetSuggestedSetupName(packageId, Channel, targetOs);
                 if (File.Exists(Path.Combine(ReleaseDirectory, setupName))) {
                     installers.Add(setupName);
                 }
             }
 
-            var portableName = ReleaseEntryHelper.GetSuggestedPortableName(packageId, Channel);
+            var portableName = ReleaseEntryHelper.GetSuggestedPortableName(packageId, Channel, targetOs);
             if (File.Exists(Path.Combine(ReleaseDirectory, portableName))) {
                 installers.Add(portableName);
             }
@@ -79,7 +80,7 @@ public class PublishTask : MSBuildAsyncTask
             Logger.LogInformation("Uploaded {FileName} to Velopack", assetFileName);
         }
 
-        foreach(var installerFile in installers) {
+        foreach (var installerFile in installers) {
             var latestPath = Path.Combine(ReleaseDirectory, installerFile);
 
             using var fileStream = File.OpenRead(latestPath);
