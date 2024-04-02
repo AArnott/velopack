@@ -11,7 +11,7 @@ public static class TestApp
     public static void PackTestApp(string id, string version, string testString, string releaseDir, ILogger logger,
         string releaseNotes = null, string channel = null, RID targetRid = null)
     {
-        targetRid ??= RID.Parse(VelopackRuntimeInfo.SystemOs.GetOsShortName());
+        targetRid ??= RID.Parse(VelopackRuntimeInfo.SystemRid);
 
         var projDir = PathHelper.GetTestRootPath("TestApp");
         var testStringFile = Path.Combine(projDir, "Const.cs");
