@@ -5,6 +5,7 @@ using System.Reflection.PortableExecutable;
 using AsmResolver.PE;
 using AsmResolver.PE.File;
 using AsmResolver.PE.Win32Resources.Icon;
+using AsmResolver.PE.Win32Resources.Version;
 using Velopack.NuGet;
 using Velopack.Packaging.Windows;
 
@@ -68,16 +69,11 @@ public class ResourceEditTests
         CreateTestPEFileWithoutRsrc(tempFile);
 
         var edit = new ResourceEdit(tempFile, logger);
-        edit.CopyResourcesFrom(PathHelper.GetFixture("atom.exe"));
+        edit.CopyResourcesFrom(PathHelper.GetFixture("Clowd.exe"));
         edit.Commit();
 
-        var versionInfo = FileVersionInfo.GetVersionInfo(tempFile);
-        Assert.Equal("0.16.2", versionInfo.FileVersion);
-        Assert.Equal("0.132.0-f4b23b8", versionInfo.ProductVersion);
-        Assert.StartsWith("Copyright (C) 2014 GitHub", versionInfo.LegalCopyright);
-        Assert.Equal("Atom", versionInfo.ProductName);
-        Assert.Equal("Atom", versionInfo.FileDescription);
-        Assert.Equal("GitHub, Inc.", versionInfo.CompanyName);
+        AssertVersionInfo(tempFile, "3.4.439.61274", "3.4.439+ef5a83", "Copyright © Caelan Sayler, 2014-2022",
+            "Clowd", "Clowd", "Caelan Sayler");
     }
 
     [Fact]
@@ -90,16 +86,11 @@ public class ResourceEditTests
         File.Copy(exe, tempFile);
 
         var edit = new ResourceEdit(tempFile, logger);
-        edit.CopyResourcesFrom(PathHelper.GetFixture("atom.exe"));
+        edit.CopyResourcesFrom(PathHelper.GetFixture("Clowd.exe"));
         edit.Commit();
 
-        var versionInfo = FileVersionInfo.GetVersionInfo(tempFile);
-        Assert.Equal("0.16.2", versionInfo.FileVersion);
-        Assert.Equal("0.132.0-f4b23b8", versionInfo.ProductVersion);
-        Assert.StartsWith("Copyright (C) 2014 GitHub", versionInfo.LegalCopyright);
-        Assert.Equal("Atom", versionInfo.ProductName);
-        Assert.Equal("Atom", versionInfo.FileDescription);
-        Assert.Equal("GitHub, Inc.", versionInfo.CompanyName);
+        AssertVersionInfo(tempFile, "3.4.439.61274", "3.4.439+ef5a83", "Copyright © Caelan Sayler, 2014-2022",
+            "Clowd", "Clowd", "Caelan Sayler");
     }
 
     [Fact]
@@ -167,13 +158,7 @@ public class ResourceEditTests
         edit.SetVersionInfo(manifest);
         edit.Commit();
 
-        var versionInfo = FileVersionInfo.GetVersionInfo(tempFile);
-        Assert.Equal(pkgVersion.ToFullString(), versionInfo.FileVersion);
-        Assert.Equal(pkgVersion.ToFullString(), versionInfo.ProductVersion);
-        Assert.Equal(manifest.ProductCopyright, versionInfo.LegalCopyright);
-        Assert.Equal(manifest.ProductName, versionInfo.ProductName);
-        Assert.Equal(manifest.ProductDescription, versionInfo.FileDescription);
-        Assert.Equal(manifest.ProductCompany, versionInfo.CompanyName);
+        AssertVersionInfo(tempFile, manifest);
     }
 
     [Fact]
@@ -191,12 +176,45 @@ public class ResourceEditTests
         edit.SetVersionInfo(manifest);
         edit.Commit();
 
-        var versionInfo = FileVersionInfo.GetVersionInfo(tempFile);
-        Assert.Equal(pkgVersion.ToFullString(), versionInfo.FileVersion);
-        Assert.Equal(pkgVersion.ToFullString(), versionInfo.ProductVersion);
-        Assert.Equal(manifest.ProductCopyright, versionInfo.LegalCopyright);
-        Assert.Equal(manifest.ProductName, versionInfo.ProductName);
-        Assert.Equal(manifest.ProductDescription, versionInfo.FileDescription);
-        Assert.Equal(manifest.ProductCompany, versionInfo.CompanyName);
+        AssertVersionInfo(tempFile, manifest);
+    }
+
+    private void AssertVersionInfo(string exeFile, PackageManifest manifest)
+    {
+        AssertVersionInfo(exeFile, manifest.Version!.ToFullString(), manifest.Version!.ToFullString(),
+            manifest.ProductCopyright, manifest.ProductName, manifest.ProductDescription, manifest.ProductCompany);
+    }
+
+    private void AssertVersionInfo(string exeFile, string fileVersion, string productVersion,
+        string legalCopyright, string productName, string fileDescription, string companyName)
+    {
+        if (VelopackRuntimeInfo.IsWindows) {
+            // on Windows FileVersionInfo uses win32 methods to retrieve info from the PE resources
+            // on Unix, this function just looks for managed assembly attributes so is not suitable
+            var versionInfo = FileVersionInfo.GetVersionInfo(exeFile);
+            Assert.Equal(fileVersion, versionInfo.FileVersion);
+            Assert.Equal(productVersion, versionInfo.ProductVersion);
+            Assert.Equal(legalCopyright, versionInfo.LegalCopyright);
+            Assert.Equal(productName, versionInfo.ProductName);
+            Assert.Equal(fileDescription, versionInfo.FileDescription);
+            Assert.Equal(companyName, versionInfo.CompanyName);
+        } else {
+            var file = PEFile.FromFile(exeFile);
+            var image = PEImage.FromFile(file);
+            Assert.NotNull(image.Resources);
+            var versionInfo = VersionInfoResource.FromDirectory(image.Resources);
+
+            var stringInfo = versionInfo.GetChild<StringFileInfo>(StringFileInfo.StringFileInfoKey);
+            Assert.NotNull(stringInfo);
+            Assert.Single(stringInfo.Tables);
+
+            var stringTable = stringInfo.Tables[0];
+            Assert.Equal(companyName, stringTable[StringTable.CompanyNameKey]);
+            Assert.Equal(fileDescription, stringTable[StringTable.FileDescriptionKey]);
+            Assert.Equal(fileVersion, stringTable[StringTable.FileVersionKey]);
+            Assert.Equal(legalCopyright, stringTable[StringTable.LegalCopyrightKey]);
+            Assert.Equal(productName, stringTable[StringTable.ProductNameKey]);
+            Assert.Equal(productVersion, stringTable[StringTable.ProductVersionKey]);
+        }
     }
 }
