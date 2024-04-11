@@ -13,6 +13,7 @@ internal class HmacAuthHttpClientHandler : HttpClientHandler
     {
         if (request.Headers.Authorization?.Scheme == HmacHelper.HmacScheme &&
             request.Headers.Authorization.Parameter is { } authParameter &&
+            request.Content is { } content &&
             authParameter.Split(':') is var keyParts &&
             keyParts.Length == 2) 
         {
@@ -20,10 +21,11 @@ internal class HmacAuthHttpClientHandler : HttpClientHandler
             string key = keyParts[1];
             string nonce = Guid.NewGuid().ToString();
 
-            using var contentStream = await request.Content.ReadAsStreamAsync().ConfigureAwait(false);
 #if NET6_0_OR_GREATER
+            using var contentStream = await content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             string contentHash = await HmacHelper.GetContentHashAsync(contentStream).ConfigureAwait(false);
 #else
+            using var contentStream = await content.ReadAsStreamAsync().ConfigureAwait(false);
             string contentHash = HmacHelper.GetContentHash(contentStream);
 #endif
             uint secondsSinceEpoch = HmacHelper.GetSecondsSinceEpoch();

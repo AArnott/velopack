@@ -24,6 +24,8 @@ public class PublishTask : MSBuildAsyncTask
 
     public string? Version { get; set; }
 
+    public string? ApiKey { get; set; }
+
     protected override async Task<bool> ExecuteAsync()
     {
         //System.Diagnostics.Debugger.Launch();
@@ -31,7 +33,8 @@ public class PublishTask : MSBuildAsyncTask
         if (!await client.LoginAsync(new() {
             AllowDeviceCodeFlow = false,
             AllowInteractiveLogin = false,
-            VelopackBaseUrl = ServiceUrl
+            VelopackBaseUrl = ServiceUrl,
+            ApiKey = ApiKey
         }).ConfigureAwait(false)) {
             Logger.LogWarning("Not logged into Velopack service, skipping publish. Please run vpk login.");
             return true;

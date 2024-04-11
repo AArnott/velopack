@@ -2,6 +2,7 @@
 using System.Windows;
 using Microsoft.Extensions.Logging;
 using Velopack;
+using Velopack.Sources;
 
 namespace VeloWpfSample
 {
@@ -15,7 +16,8 @@ namespace VeloWpfSample
             InitializeComponent();
 
             string updateUrl = SampleHelper.GetReleasesDir(); // replace with your update url
-            _um = new UpdateManager(updateUrl, logger: Program.Log);
+            //_um = new UpdateManager(updateUrl, logger: Program.Log);
+            _um = new UpdateManager(new VelopackFlowUpdateSource(), logger: Program.Log);
 
             TextLog.Text = Program.Log.ToString();
             Program.Log.LogUpdated += LogUpdated;
