@@ -5,9 +5,11 @@
     <TargetFramework>net48</TargetFramework>
     <ImplicitUsings>true</ImplicitUsings>
     <UseWPF>true</UseWPF>
-    <UseLocalVelopack>true</UseLocalVelopack>
+    <VelopackPackId>Kevin.Test</VelopackPackId>
     <VelopackFlowServiceUrl>http://localhost:5582</VelopackFlowServiceUrl>
-    <VelopackFlowApiKey>eOPml2dtjj71obSrVPZMlhogp6Rr:8m9JvtVid7gOfalJLKD0EVa65lXXVKaRcmyfL869nto</VelopackFlowApiKey>
+    <VelopackFlowApiKey>Lrg2WLli2KvzWbT2YjBMphBBnMpz:Yu2hISaRQWrCtdh83R4CqvdMkAKboptWdf2IZNLdSVs=</VelopackFlowApiKey>
+    <VelopackPackOnPublish>true</VelopackPackOnPublish>
+    <VelopackPushOnPublish>true</VelopackPushOnPublish>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -17,7 +19,11 @@
 
   <ItemGroup>
     <!--Condition below is only needed to test this sample project against the local projects instead of the NuGet package. Remove it in your app.-->
-    <PackageReference Include="Velopack" Version="0.*" Condition="$(UseLocalVelopack) == ''" />
+    <PackageReference Include="Velopack" Version="0.0.388-g82cc091" Condition="$(UseLocalVelopack) == ''" />
+    <PackageReference Include="Velopack.Build" Version="0.0.388-g82cc091">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
 </Project>

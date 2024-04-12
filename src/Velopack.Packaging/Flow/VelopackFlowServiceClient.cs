@@ -2,10 +2,6 @@
 using Microsoft.Identity.Client.Extensions.Msal;
 
 using Velopack.Packaging.Abstractions;
-using System.Net.Http.Headers;
-using System.Security.Cryptography;
-
-using System.Text;
 
 
 #if NET6_0_OR_GREATER
@@ -44,10 +40,10 @@ public class VelopackFlowServiceClient(HttpClient HttpClient, IConsole Console) 
         var pca = await BuildPublicApplicationAsync(authConfiguration);
 
         if (!string.IsNullOrWhiteSpace(options.ApiKey)) {
-            HttpClient.DefaultRequestHeaders.Authorization = new("HMAC", options.ApiKey);
+            HttpClient.DefaultRequestHeaders.Authorization = new(HmacHelper.HmacScheme, options.ApiKey);
             var profile = await GetProfileAsync(options);
             Console.WriteLine($"{profile?.Name} logged into Velopack with API key");
-            return false;
+            return true;
         } else {
             AuthenticationResult? rv = null;
             if (options.AllowCacheCredentials) {
